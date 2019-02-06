@@ -1,0 +1,25 @@
+{:ig/system
+ {:juxt.blog.react-hooks-raw.foo/string "Hello, react-hooks-raw!"
+  [:juxt.blog.react-hooks-raw/index :edge.yada.ig/classpath-name] {:name "index.html"}
+  [:juxt.blog.react-hooks-raw/assets :edge.yada.ig/resources] {:path "public/"}
+  :edge.yada.ig/listener {:handler #ig/ref :edge.bidi.ig/vhost
+                          :port 3000}
+  :edge.bidi.ig/vhost [["http://localhost:3000"
+                        [""
+                         [["/" #ig/ref [:juxt.blog.react-hooks-raw/index :edge.yada.ig/classpath-name]]
+                          ["/hello" #ig/ref :juxt.blog.react-hooks-raw.foo/string]
+                          ["" #ig/ref [:juxt.blog.react-hooks-raw/assets :edge.yada.ig/resources]]]]]]
+  :edge.kick/builder
+  {:kick.builder/target #profile {:dev "target/dev"
+                                  :prod "target/prod"}
+   :kick/figwheel-main {:builds [{:id "app"
+                                  :main juxt.blog.react-hooks-raw.frontend.main
+                                  :output-to "public/frontend.js"
+                                  :output-dir "public/frontend.out"
+                                  :asset-path "/frontend.out"
+                                  :optimizations #profile {:dev :none
+                                                           :prod :advanced}
+                                  :foreign-libs
+                                  [{:file "src/juxt/blog/react_hooks_raw/frontend/use_hooks.js"
+                                    :provides ["com.usehooks"]
+                                    :module-type :es6}]}]}}}}
