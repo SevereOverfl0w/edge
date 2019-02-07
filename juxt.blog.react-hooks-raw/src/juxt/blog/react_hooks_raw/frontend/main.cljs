@@ -143,11 +143,22 @@
      [:h2 "Stateful"]
      [:> Stateful nil]]))
 
+(defn create-factory
+  [el & props]
+  (js/React.createFactory el props))
+
 (defn mount
   []
-  (js/ReactDOM.render
-    ((js/React.createFactory Root))
-    (js/document.getElementById "app")))
+  (doseq [[id el] [["example" (create-factory Example)]
+                   ["example-hicada" (create-factory ExampleHicada)]
+                   ["counter" (create-factory Counter)]
+                   ["counter-f" (create-factory CounterF)]
+                   ["effect" (create-factory Effect)]
+                   ["emoji-keys" (create-factory EmojiKeys)]
+                   ["stateful" (create-factory Stateful)]]]
+    (js/ReactDOM.render
+      (el)
+      (js/document.getElementById id))))
 
 ;; This is called once
 (defonce init (mount))
