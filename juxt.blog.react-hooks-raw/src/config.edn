@@ -18,7 +18,7 @@
                                   :output-dir "public/frontend.out"
                                   :asset-path "/frontend.out"
                                   :optimizations #profile {:dev :none
-                                                           :prod :advanced}
+                                                           :prod :simple}
                                   :foreign-libs
                                   [{:file "src/juxt/blog/react_hooks_raw/frontend/use_hooks.js"
                                     :provides ["com.usehooks"]

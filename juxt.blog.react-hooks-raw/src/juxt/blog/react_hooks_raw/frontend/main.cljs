@@ -151,14 +151,16 @@
   []
   (doseq [[id el] [["example" (create-factory Example)]
                    ["example-hicada" (create-factory ExampleHicada)]
-                   ["counter" (create-factory Counter)]
-                   ["counter-f" (create-factory CounterF)]
+                   ["counter" (create-factory Counter #js {:count 5})]
+                   ["counter-f" (create-factory CounterF #js {:count 6})]
                    ["effect" (create-factory Effect)]
                    ["emoji-keys" (create-factory EmojiKeys)]
                    ["stateful" (create-factory Stateful)]]]
-    (js/ReactDOM.render
-      (el)
-      (js/document.getElementById id))))
+    (println "Searching for" id "got" (js/document.getElementById id))
+    (when-let [dom (js/document.getElementById id)]
+      (js/ReactDOM.render
+        (el)
+        dom))))
 
 ;; This is called once
 (defonce init (mount))
