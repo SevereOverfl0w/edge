@@ -143,24 +143,18 @@
      [:h2 "Stateful"]
      [:> Stateful nil]]))
 
-(defn create-factory
-  [el & props]
-  (js/React.createFactory el props))
-
 (defn mount
   []
-  (doseq [[id el] [["example" (create-factory Example)]
-                   ["example-hicada" (create-factory ExampleHicada)]
-                   ["counter" (create-factory Counter #js {:count 5})]
-                   ["counter-f" (create-factory CounterF #js {:count 6})]
-                   ["effect" (create-factory Effect)]
-                   ["emoji-keys" (create-factory EmojiKeys)]
-                   ["stateful" (create-factory Stateful)]]]
+  (doseq [[id el] [["example" (e Example nil)]
+                   ["example-hicada" (e ExampleHicada nil)]
+                   ["counter" (e Counter #js {:count 5})]
+                   ["counter-f" (e CounterF #js {:count 6})]
+                   ["effect" (e Effect nil)]
+                   ["emoji-keys" (e EmojiKeys nil)]
+                   ["stateful" (e Stateful nil)]]]
     (println "Searching for" id "got" (js/document.getElementById id))
     (when-let [dom (js/document.getElementById id)]
-      (js/ReactDOM.render
-        (el)
-        dom))))
+      (js/ReactDOM.render el dom))))
 
 ;; This is called once
 (defonce init (mount))
