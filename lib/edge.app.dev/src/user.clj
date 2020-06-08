@@ -4,8 +4,8 @@
   (:require
    [clojure.tools.namespace.repl :refer :all]
    [clojure.java.classpath :refer [classpath-directories]]
+   [dev-extras]
    [io.aviso.ansi]
-   [integrant.repl.state]
    [spyscope.core]))
 
 ;; Work around TNS-45.  This used to be fixed by using a forked version of tns,
@@ -32,7 +32,7 @@
     (println "[Edge] Loading Clojure code, please wait...")
     (locking lock
       (require 'dev))
-    (when-not integrant.repl.state/system
+    (when-not dev-extras/system
       (println (io.aviso.ansi/bold-yellow "[Edge] Enter (go) to start the dev system")))
     (in-ns 'dev)))
 
