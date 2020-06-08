@@ -5,7 +5,7 @@
   integrant/repl {:mvn/version "0.3.1"},
   io.aviso/pretty {:mvn/version "0.1.35"},
 
-  org.clojure/tools.namespace {:mvn/version "0.3.0-alpha4"}
+  org.clojure/tools.namespace {:mvn/version "1.0.0"}
   org.clojure/java.classpath {:mvn/version "0.3.0"}
 
   ;; Spyscope's version of fipp doesn't work with Java 11
