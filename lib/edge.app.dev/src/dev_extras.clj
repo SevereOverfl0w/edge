@@ -48,6 +48,34 @@
 (def system-config "The :ig/system key used to create `system`" nil)
 (def system "After starting your dev system, this will be the system that was started.  You can use this to get individual components and test them in the repl." nil)
 (def ^:private preparer nil)
+(def ^:private fixtures (atom []))
+(def ^:private known-lifecycles
+  #{:start-once :start-always :stop-once :stop-always})
+
+(defn add-dev-system-fixture!
+  [lifecycle key f]
+  (assert (known-lifecycles lifecycle) (str "Unknown lifecycle " lifecycle))
+  (swap! fixtures
+         (fn [fixtures]
+           (conj (remove (fn [[l k]] (= [l k] [lifecycle key])) fixtures)
+                 [lifecycle key f])))
+  key)
+
+(defn remove-dev-system-fixture!
+  ([key]
+   (swap! fixtures #(remove (fn [[_ k]] (= key k)) %))
+   nil)
+  ([lifecycle key]
+   (swap! fixtures #(remove (fn [fixture] (= fixture [lifecycle key]))))
+   nil))
+
+(defn dev-system-fixtures
+  []
+  (sort-by first @fixtures))
+
+(defn- wrap-fixtures
+  [root-f fs]
+  ((reduce (fn [root-f f] #(f root-f)) root-f fs)))
 
 (defn set-prep!
   "Set the opts passed to `aero.core/read-config` for the development system.
@@ -70,7 +98,10 @@
 
 (defn- halt-system
   [system]
-  (when system (ig/halt! system)))
+  (when system
+    (wrap-fixtures
+      #(ig/halt! system)
+      (map last (filter (fn [[lifecycle _]] (#{:stop-once :stop-always} lifecycle)) @fixtures)))))
 
 (defn- build-system
   [build wrap-ex]
@@ -86,19 +117,25 @@
 
 (defn- init-system
   [config]
-  (build-system
-    #(ig/init config)
-    #(ex-info "Config failed to init; also failed to halt failed system"
-              {:init-exception %1}
-              %2)))
+  (wrap-fixtures
+    (fn []
+      (build-system
+        #(ig/init config)
+        #(ex-info "Config failed to init; also failed to halt failed system"
+                  {:init-exception %1}
+                  %2)))
+    (map last (filter (fn [[lifecycle _]] (#{:start-once :start-always} lifecycle)) @fixtures))))
 
 (defn- resume-system
   [config system]
-  (build-system
-    #(ig/resume config system)
-    #(ex-info "Config failed to resume; also failed to halt failed system"
-              {:resume-exception %1}
-              %2)))
+  (wrap-fixtures
+    (fn []
+      (build-system
+        #(ig/resume config system)
+        #(ex-info "Config failed to resume; also failed to halt failed system"
+                  {:resume-exception %1}
+                  %2)))
+    (map last (filter (fn [[lifecycle _]] (= :start-always lifecycle)) @fixtures))))
 
 (defn init
   []
@@ -138,7 +175,10 @@
 (defn suspend
   "Like halt, but doesn't completely stop some components.  This makes the components faster to start again, but means they may not be completely stopped (e.g. A web server might still have the port in use)"
   []
-  (when system (ig/suspend! system))
+  (when system
+    (wrap-fixtures
+      #(ig/suspend! system)
+      (map last (filter (fn [[lifecycle _]] (= :stop-always lifecycle)) @fixtures))))
   :suspended)
 
 (defn resume
