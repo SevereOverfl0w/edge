@@ -47,7 +47,7 @@
 
 (def system-config "The :ig/system key used to create `system`" nil)
 (def system "After starting your dev system, this will be the system that was started.  You can use this to get individual components and test them in the repl." nil)
-(def ^:private preparer nil)
+(def preparer {:profile :dev})
 (def ^:private fixtures (atom []))
 (def ^:private known-lifecycles
   #{:start-once :start-always :stop-once :stop-always})
@@ -82,9 +82,7 @@
 
   Example: `(set-prep! {:profile :dev :features [:in-memory-postgres]})`"
   [aero-opts]
-  (alter-var-root #'preparer (constantly #(system/system-config aero-opts))))
-
-(set-prep! {:profile :dev})
+  (alter-var-root #'preparer (constantly aero-opts)))
 
 (defn- prep-error
   []
@@ -93,7 +91,7 @@
 (defn- prep
   []
   (if-let [prep preparer]
-    (do (alter-var-root #'system-config (fn [_] (prep))) :prepped)
+    (do (alter-var-root #'system-config (fn [_] (system/system-config (prep)))) :prepped)
     (throw (prep-error))))
 
 (defn- halt-system
@@ -185,7 +183,7 @@
   "Like `go`, but works on a system suspended with `suspend`."
   []
   (if-let [prep preparer]
-    (let [cfg (prep)]
+    (let [cfg (system/system-config prep)]
       (alter-var-root #'system-config (constantly cfg))
       (alter-var-root #'system (fn [sys]
                                  (if sys
